@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Subdevice Selection</title>
+  <script>
+    function handleSubdeviceSelection() {
+      var subDeviceIndex = document.getElementById("subDeviceDropdown").value;
+      if (subDeviceIndex) {
+        window.location.href = "/api/readRegisters?deviceIndex=" +
+          new URLSearchParams(window.location.search).get("deviceIndex") +
+          "&subDeviceIndex=" + subDeviceIndex;
+      } else {
+        alert("Please select a subdevice!");
+      }
+    }
+
+    function toggleProceedButton() {
+      var subDeviceIndex = document.getElementById("subDeviceDropdown").value;
+      var proceedButton = document.getElementById("proceedButton");
+
+      // Show button only if a subdevice is selected
+      if (subDeviceIndex) {
+        proceedButton.style.display = "block";
+      } else {
+        proceedButton.style.display = "none";
+      }
+    }
+  </script>
+</head>
+<body>
+<h1>Select a Subdevice</h1>
+
+<p>Device: <span th:text="${device.modbusName}"></span></p>
+
+<form>
+  <label for="subDeviceDropdown">Choose a Subdevice:</label>
+  <select id="subDeviceDropdown" onchange="toggleProceedButton()">
+    <option value="">-- Select a Subdevice --</option>
+    <option th:each="subdevice, iterStat : ${device.subDevices}"
+            th:value="${iterStat.index}"
+            th:text="${subdevice.name}">Subdevice</option>
+  </select>
+
+  <br><br>
+
+  <!-- Initially Hidden Proceed Button -->
+  <button type="button" id="proceedButton" onclick="handleSubdeviceSelection()" style="display: none;">
+    Proceed
+  </button>
+</form>
+
+</body>
+</html>

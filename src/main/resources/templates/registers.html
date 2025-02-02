@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modbus Registers</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+  <h2>Modbus Registers</h2>
+
+  <!-- Table for displaying fetched registers -->
+  <table class="table table-bordered">
+    <thead>
+    <tr>
+      <th>Register #</th>
+      <th>Value</th>
+    </tr>
+    </thead>
+    <tbody id="registersTableBody">
+    <!-- Table rows will be populated dynamically with JavaScript -->
+    </tbody>
+  </table>
+
+  <!-- Button to fetch registers for a device -->
+  <button class="btn btn-primary" onclick="fetchRegisters()">Fetch Registers</button>
+</div>
+
+<script>
+  // Example data from the server (this would come from your backend)
+  const registerData = [
+      { "register": 1, "value": 123 },
+      { "register": 2, "value": 456 },
+      { "register": 3, "value": 789 }
+  ];
+
+  // Function to populate the table with register data
+  function populateTable(registers) {
+      const tableBody = document.getElementById("registersTableBody");
+      tableBody.innerHTML = ''; // Clear any existing rows
+
+      registers.forEach(register => {
+          const row = document.createElement("tr");
+          row.innerHTML = `<td>${register.register}</td><td>${register.value}</td>`;
+          tableBody.appendChild(row);
+      });
+  }
+
+  // Function to simulate fetching register data and populate the table
+  function fetchRegisters() {
+      // Here, you would fetch the data from your API, e.g. via fetch or AJAX
+      // For now, we'll use the example data as a placeholder
+      populateTable(registerData);
+  }
+</script>
+</body>
+</html>

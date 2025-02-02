@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Device Selection</title>
+  <script>
+    function toggleButtons() {
+      var deviceIndex = document.getElementById("deviceIndex").value;
+      var buttonsDiv = document.getElementById("buttonsDiv");
+
+      if (deviceIndex) {
+        buttonsDiv.style.display = "block";
+      } else {
+        buttonsDiv.style.display = "none";
+      }
+    }
+
+    function navigateToMeter() {
+      var deviceIndex = document.getElementById("deviceIndex").value;
+      if (deviceIndex) {
+        window.location.href = "/api/devices/meter?deviceIndex=" + deviceIndex;
+      } else {
+        alert("Please select a device first!");
+      }
+    }
+  </script>
+</head>
+<body>
+<h1>Select a Device</h1>
+<form>
+  <label for="deviceIndex">Choose a Device:</label>
+  <select name="deviceIndex" id="deviceIndex" onchange="toggleButtons()">
+    <option value="">-- Select a Device --</option>
+    <option th:each="device, iterStat : ${devices}"
+            th:value="${iterStat.index}"
+            th:text="${device.modbusName}">Device</option>
+  </select>
+
+  <br><br>
+
+  <div id="buttonsDiv" style="display: none;">
+    <button type="button" id="meterButton" onclick="navigateToMeter()">Meter</button>
+    <button type="submit" formaction="/api/readRegisters">Read Modbus</button>
+  </div>
+</form>
+</body>
+</html>

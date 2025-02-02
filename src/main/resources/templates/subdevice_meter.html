@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subdevice Meter Registers</title>
+</head>
+<body>
+    <h1>Subdevice Meter Registers</h1>
+    <h3>Subdevice: <span th:text="${subDevice.name}"></span></h3>
+
+    <!-- Form to Select Start Address and Quantity -->
+    <form action="/api/devices/subdevice-process" method="POST">
+        <input type="hidden" name="deviceIndex" th:value="${deviceIndex}">
+        <input type="hidden" name="subDeviceIndex" th:value="${subDeviceIndex}">
+        <label for="startAddress">Start Address:</label>
+        <input type="number" id="startAddress" name="startAddress" value="0" required>
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" value="10" required>
+        <button type="submit">Process</button>
+    </form>
+
+    <!-- Table to Display Subdevice Registers -->
+    <div th:if="${processedRegisters != null}">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Register #</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="register : ${processedRegisters}">
+                    <td th:text="${register['address']}"></td>
+                    <td th:text="${register['value']}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
