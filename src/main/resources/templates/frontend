@@ -1,46 +1,82 @@
-import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client"; // Adjust this if using SockJS/Stomp
+import React, { useState, useEffect } from 'react';
 
-const Table = () => {
-  const [energyData, setEnergyData] = useState({}); // Store energy data
+const EnergyResultsTable = () => {
+  // Store energy results
+  const [firstEnergyResults, setFirstEnergyResults] = useState({});
+  const [currentEnergyResults, setCurrentEnergyResults] = useState({});
+  const [lastEnergyResults, setLastEnergyResults] = useState({}); // Keeps previous/current result history
 
+  const [firstResultSaved, setFirstResultSaved] = useState(false);
+
+  // WebSocket connection
   useEffect(() => {
-    const socket = io("http://localhost:8080"); // Adjust WebSocket URL
+    const socket = new WebSocket('ws://your-websocket-url'); // Replace with your WebSocket URL
 
-    socket.on("energyUpdates", (data) => {
-      setEnergyData((prev) => ({
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      const deviceId = message.deviceID;
+      const energyType = Object.keys(message).find(key => key !== 'deviceID');
+      const energyValue = message[energyType];
+
+      // Process the first energy result if not already saved
+      if (!firstResultSaved) {
+        setFirstEnergyResults((prev) => {
+          return { ...prev, [energyType]: energyValue };
+        });
+        setFirstResultSaved(true); // Mark that the first result has been saved
+      }
+
+      // Update current energy results
+      setCurrentEnergyResults((prev) => ({ ...prev, [energyType]: energyValue }));
+
+      // Update last energy results (previous value of current energy result)
+      setLastEnergyResults((prev) => ({
         ...prev,
-        [data.type]: data, // Update only the relevant energy type
+        [energyType]: prev[energyType] || energyValue, // Store the previous value
       }));
-    });
+    };
 
-    return () => socket.disconnect();
-  }, []);
+    return () => {
+      socket.close(); // Clean up WebSocket connection on component unmount
+    };
+  }, [firstResultSaved]);
 
+  // Update the energy table when new data is received
+  const updateEnergyTable = (energyType) => {
+    const firstResult = firstEnergyResults[energyType] || '';
+    const currentResult = currentEnergyResults[energyType] || '';
+    const lastResult = lastEnergyResults[energyType] || ''; // Store the previous value as last result
+
+    return { firstResult, currentResult, lastResult };
+  };
+
+  // Generate the table rows dynamically based on available data
+  const energyTypes = Object.keys(firstEnergyResults); // Use firstEnergyResults as a key list
   return (
-    <div className="p-4">
-      <table className="w-full border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border border-gray-300 p-2">Energy Type</th>
-            <th className="border border-gray-300 p-2">Current Value</th>
-            <th className="border border-gray-300 p-2">First Fetched</th>
-            <th className="border border-gray-300 p-2">Last Fetched</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.keys(energyData).map((key) => (
-            <tr key={key} className="odd:bg-gray-100 even:bg-white">
-              <td className="border border-gray-300 p-2">{key}</td>
-              <td className="border border-gray-300 p-2">{energyData[key].value}</td>
-              <td className="border border-gray-300 p-2">{energyData[key].firstFetched}</td>
-              <td className="border border-gray-300 p-2">{energyData[key].lastFetched}</td>
+    <table id="energyResultsTable">
+      <thead>
+        <tr>
+          <th>Energy Type</th>
+          <th>First Result</th>
+          <th>Current Result</th>
+          <th>Last Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {energyTypes.map((energyType) => {
+          const { firstResult, currentResult, lastResult } = updateEnergyTable(energyType);
+          return (
+            <tr key={energyType}>
+              <td>{energyType}</td>
+              <td>{firstResult || 'No first result'}</td>
+              <td>{currentResult}</td>
+              <td>{lastResult}</td> {/* Shows the previous value */}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          );
+        })}
+      </tbody>
+    </table>
   );
 };
 
-export default Table;
+export default EnergyResultsTable;
